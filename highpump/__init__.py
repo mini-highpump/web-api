@@ -2,7 +2,7 @@
 #coding: utf-8
 from flask import Flask
 from config import DevelopmentConfig
-from counter import creater_counter, get_counter
+from counter import create_counter, get_counter
 
 
 def init_app():
@@ -61,9 +61,9 @@ def init_errorhandlers(app):
 
 
 def init_counter():
-    creater_counter("uid", 23)
-    creater_counter("sid", 11)
-    creater_counter("url_id", 10)
+    create_counter("uid", 23)
+    create_counter("sid", 11)
+    create_counter("url_id", 10)
 
 
 app = init_app()

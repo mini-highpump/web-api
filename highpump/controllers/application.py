@@ -6,7 +6,7 @@ Provide api which is called by frontend.
 '''
 import time
 from flask import Blueprint, request, g
-from .. import tool, app
+from .. import tool
 from ..models import db
 from ..models.user import User
 from ..models.favor import FavorList
@@ -24,7 +24,8 @@ def get_uid():
         uid = tool.get_uid()
         u = User(uid)
     else:
-        required_login(lambda x : x)
+        tool.filter(lambda x : x, ["uinfo", "token"])()
+        tool.required_login(lambda x : x)()
         u = g.user
     u.key = tool.get_key()
     u.expires = int(time.time()) + 7200
@@ -36,7 +37,7 @@ def get_uid():
 
 @bp.route("/choose_mode", methods=["POST"])
 @tool.begin
-@tool.filter(request.form, ["uinfo", "token", "mode"])
+@tool.filter(["uinfo", "token", "mode"])
 @tool.required_login
 @tool.pack_return
 def choose_mode():
@@ -46,7 +47,7 @@ def choose_mode():
 
 @bp.route("/get_play_list", methods=["POST"])
 @tool.begin
-@tool.filter(request.form, ["uinfo", "token", "speed"])
+@tool.filter(["uinfo", "token", "speed"])
 @tool.required_login
 @tool.pack_return
 def get_play_list():
@@ -55,7 +56,7 @@ def get_play_list():
 
 @bp.route("/switch_song", methods=["POST"])
 @tool.begin
-@tool.filter(request.form, ["uinfo", "token", "sid", "speed"])
+@tool.filter(["uinfo", "token", "sid", "speed"])
 @tool.required_login
 @tool.pack_return
 def switch_song():
@@ -65,11 +66,11 @@ def switch_song():
 
 @bp.route("/toggle_like", methods=["POST"])
 @tool.begin
-@tool.filter(request.form, ["uinfo", "token", "sid"])
+@tool.filter(["uinfo", "token", "sid"])
 @tool.required_login
 @tool.pack_return
 def toggle_like():
-    f = FavorList.query.filter(FavorList.uid == g.user.uid and FavorList.sid = g.args["sid"]).all()
+    f = FavorList.query.filter(FavorList.uid == g.user.uid and FavorList.sid == g.args["sid"]).all()
     if len(f) > 1:
         raise InternalError(-10003, "Affected rows more than 1.")
     if f.state == 1:
@@ -82,7 +83,7 @@ def toggle_like():
 
 @bp.route("/get_history_list", methods=["POST"])
 @tool.begin
-@tool.filter(request.form, ["uinfo", "token"])
+@tool.filter(["uinfo", "token"])
 @tool.required_login
 @tool.pack_return
 def get_history_list():

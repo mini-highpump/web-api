@@ -122,20 +122,22 @@ def begin(func):
     return wrapper
 
 
-def filter(func, d, t):
+def filter(t):
     '''
     Filter parameters which are essential.
     '''
-    from functools import wraps
-    from flask import g
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        for i in t:
-            if not d.has_key(i):
-                raise ThrownError(-20001, "Parameters error.")
-        g.args = d # capture request parameters
-        func(*args, **kwargs)
-    return wrapper
+    def real_decorator(func):
+        from functools import wraps
+        from flask import g, request
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            for i in t:
+                if not request.form.has_key(i):
+                    raise ThrownError(-20001, "Parameters error.")
+            g.args = request_form # capture request parameters
+            func(*args, **kwargs)
+        return wrapper
+    return real_decorator
 
 
 def pack_return(func):
