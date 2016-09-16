@@ -3,6 +3,11 @@
 from flask import Flask
 from config import DevelopmentConfig
 from counter import create_counter, get_counter
+import redis
+
+
+# global redis connector
+gr = redis.Redis("localhost")
 
 
 def init_app():
