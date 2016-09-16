@@ -75,7 +75,7 @@ def get_sid(filehash):
     seq.append(get_shuffle_seq(20 - len(ts), string.digits))
     seq.append(ts)
     seq.append(str(get_counter("sid").count()))
-    return "".joint(seq)
+    return "".join(seq)
 
 
 def get_key():
