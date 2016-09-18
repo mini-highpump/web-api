@@ -29,7 +29,7 @@ def get_uid():
         uid = tool.get_uid(request.remote_addr)
         u = User(uid)
     else:
-        tool.filter(lambda x : x, ["uinfo", "token"])()
+        tool.filter(lambda x : x)(["uinfo", "token"])
         tool.required_login(lambda x : x)()
         u = g.user
     u.key = tool.get_key()
