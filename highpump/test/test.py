@@ -121,6 +121,7 @@ def runTest():
     app = ApplicationTest()
     # login
     app.get_token()
+    app.get_token(2)
     # choose_mode
     app.choose_mode(2)
     # get_play_list
