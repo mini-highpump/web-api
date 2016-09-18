@@ -37,7 +37,7 @@ def init_blueprint(app):
     Initialize blueprints
     '''
     from controllers import application, pool
-    app.register_blueprint(application.bp, url_prefix='/application')
+    app.register_blueprint(application.bp, url_prefix='/app')
     app.register_blueprint(pool.bp, url_prefix='/pool')
 
 
@@ -48,9 +48,8 @@ def init_errorhandlers(app):
     @app.errorhandler(ThrownError)
     def thrownerror(e):
         r = {
-                'status': False, 
-                'message': e.err, 
-                'result': ''
+                'retcode': e.errcode, 
+                'retmsg': e.errmsg, 
             }
         return json.dumps(r)
 
@@ -58,9 +57,8 @@ def init_errorhandlers(app):
     @app.errorhandler(InternalError)
     def internalerror(e):
         r = {
-                'status': False, 
-                'message': 'Internal Error', 
-                'result': ''
+                'retcode': e.errcode, 
+                'retmsg': 'Internal Error', 
             }
         return json.dumps(r)
 

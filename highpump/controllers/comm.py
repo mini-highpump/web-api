@@ -8,14 +8,27 @@ from ..error import InternalError
 
 
 def normal_recommend(uid, speed, mode):
+    speed *= 10
     vA = gr.lrange("user_result_" + uid, 0, -1)
-    vB = Song.query.filter(compute_by_mode(mode)(speed, Song.bpm)).all()
+    if mode == 1:
+        vB = Song.query.filter(speed >= (Song.bpm - 100), speed < (Song.bpm + 100)).all()
+    elif mode == 2:
+        vB = Song.query.filter(speed >= Song.bpm, speed < (Song.bpm + 200)).all()
+    else:
+        raise InternalError(-10003, "mode value error.")
     result = [item for item in vB if item.sid in vA]
     if len(result) > 3:
         i = int(random.random() * len(result))
         j = int(random.random() * len(result))
         k = int(random.random() * len(result))
         return [result[i], result[j], result[k]]
+    else:
+        if len(vB) == 0:
+            vB = Song.query.all()
+        i = int(random.random() * len(vB))
+        print i
+        print vB
+        result.append(vB[i])
     return result
 
 
@@ -35,10 +48,15 @@ def special_recommend(uid, mode):
 
 
 def compute_by_mode(mode):
+    print "mode: %d" % mode
     if mode == 1:
         def wrapper(speed, bpm):
-            return speed >= (bpm - 10) and speed < (bpm + 10)
+            speed *= 10
+            return speed >= (bpm - 100) and speed < (bpm + 100)
+        return warpper
     elif mode == 2:
         def wrapper(speed, bpm):
-            return speed >= bpm and speed < (bpm + 20)
-    return wrapper
+            speed *= 10
+            return speed >= bpm and speed < (bpm + 200)
+        return wrapper
+    return lambda x, y : True 

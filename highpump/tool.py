@@ -10,6 +10,9 @@ import string
 import time
 import socket
 import base64
+import struct
+import os
+import urllib
 from Crypto.Cipher import AES
 from error import InternalError, ThrownError
 from counter import get_counter
@@ -20,12 +23,12 @@ def hash(string):
 
 
 def aes_en(key, data):
-    obj = AES.new(key, AES.MODE_CFB)
+    obj = AES.new(key, AES.MODE_CFB, '\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x10\x11\x12\x13\x14\x15')
     return obj.encrypt(data)
 
 
 def aes_de(key, en_data):
-    obj = AES.new(key, AES.MODE_CFB)
+    obj = AES.new(key, AES.MODE_CFB, '\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x10\x11\x12\x13\x14\x15')
     return obj.decrypt(data)
 
 
@@ -90,12 +93,12 @@ def get_urlid(key, uid, sid, expires, valid_length):
     Get a unique url id
     Note: this function must be called before a create_counter function call.
     '''
-    seq = [uid, sid, str(expires), str(valid_length)]
-    seq.append(get_shuffle_seq(32 - len(seq[2]) - len(seq[3]), string.ascii_letters + string.digits))
+    seq = [hash(uid + sid), str(expires), str(valid_length)]
+    seq.append(get_shuffle_seq(32 - len(seq[1]) - len(seq[2]), string.ascii_letters + string.digits))
     seq.append(str(get_counter("url_id").count()))
-    return base64.standard_b64encode(
-                aes_en(key, "".join(seq))
-            )
+    return (base64.b64encode(
+                aes_en(key, "".join(seq)), "y_"
+            ))
 
 
 def get_token(key, uid, expires):
@@ -103,6 +106,7 @@ def get_token(key, uid, expires):
     Get a token.
     token = md5(aes_en(key, uid+":"+expires))
     '''
+    print key, uid, expires
     return hash(aes_en(key, ":".join([uid, str(expires)])))
 
 
@@ -111,14 +115,17 @@ def begin(func):
     Begin a request handler.
     '''
     from functools import wraps
+    from flask import g
     @wraps(func)
     def wrapper(*args, **kwargs):
         try:
-            func(*args, **kwargs)
+            g.result = {}
+            return func(*args, **kwargs)
         except InternalError, ThrownError:
             raise
         except: # catch other exception
-            raise InternalError(-10000, "Unknown error.")
+            raise
+            # raise InternalError(-10000, "Unknown error.")
     return wrapper
 
 
@@ -134,8 +141,8 @@ def filter(t):
             for i in t:
                 if not request.form.has_key(i):
                     raise ThrownError(-20001, "Parameters error.")
-            g.args = request_form # capture request parameters
-            func(*args, **kwargs)
+            g.args = request.form # capture request parameters
+            return func(*args, **kwargs)
         return wrapper
     return real_decorator
 
@@ -146,6 +153,7 @@ def pack_return(func):
     Excute after func.
     '''
     from functools import wraps
+    from flask import g
     @wraps(func)
     def wrapper(*args, **kwargs):
         func(*args, **kwargs)
@@ -161,18 +169,18 @@ def required_login(func):
     from models.user import User
     @wraps(func)
     def wrapper(*args, **kwargs):
-        (uid, ts) = base64.standard_b64decode(args["uinfo"]).split(":")
-        diff = int(time.time()) - ts
-        if diff > 120 or diff < 0:
+        uid, ts = base64.standard_b64decode(g.args["uinfo"]).split(":")
+        diff = int(time.time()) - int(ts)
+        if diff > 12000 or diff < 0:
             raise ThrownError(-20002, "Request timeout.")
         u = User.query.get(uid)
         if u is None:
             raise ThrownError(-20003, "User does\'t exist.")
-        if args["token"] != get_token(u.key, u.uid, u.expires):
+        if g.args["token"] != get_token(u.key, u.uid, u.expires):
             raise ThrownError(-20004, "Error token.") 
         if u.expires <= int(time.time()):
             raise ThrownError(-20005, "Token timeout. Please refresh it.")
         g.user = u
-        g.token = args["token"]
-        func(*args, **kwargs)
+        g.token = g.args["token"]
+        return func(*args, **kwargs)
     return wrapper

@@ -6,6 +6,8 @@ class BaseConfig(object):
     # 分表的N的值
     TABLE_NUM = 7
 
+    HOST = "http://localhost:5000"
+
 
 class DevelopmentConfig(BaseConfig):
     '''Development mode'''
