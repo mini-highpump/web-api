@@ -14,6 +14,8 @@ def normal_recommend(uid, speed, mode):
         vB = Song.query.filter(speed >= (Song.bpm - 100), speed < (Song.bpm + 100)).all()
     elif mode == 2:
         vB = Song.query.filter(speed >= Song.bpm, speed < (Song.bpm + 200)).all()
+    elif mode == 3 or mode == 4:
+        special_recommend(uid, mode)
     else:
         raise InternalError(-10003, "mode value error.")
     result = [item for item in vB if item.sid in vA]
