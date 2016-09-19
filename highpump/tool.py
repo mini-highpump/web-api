@@ -138,6 +138,7 @@ def filter(t):
         from flask import g, request
         @wraps(func)
         def wrapper(*args, **kwargs):
+            print request.form
             for i in t:
                 if not request.form.has_key(i):
                     raise ThrownError(-20001, "Parameters error.")

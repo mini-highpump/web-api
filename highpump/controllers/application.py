@@ -56,6 +56,9 @@ def choose_mode():
 @tool.required_login
 @tool.pack_return
 def get_play_list():
+    if g.args.has_key("songs"):
+        sid_list = g.args["songs"].split("|")
+        do_set_play_list(g.user.uid, sid_list)
     do_get_song_list(g.user.uid, g.args["speed"])
 
 
@@ -65,16 +68,7 @@ def get_play_list():
 @tool.required_login
 @tool.pack_return
 def switch_song():
-    play_list = PlayList.query.filter(PlayList.uid == g.user.uid and PlayList.sid == g.args["sid"]) \
-                                .order_by(PlayList.start_time.desc()).first()
-    if play_list is not None:
-        if play_list.end_time is not None:
-            raise ThrownError(-20001, "Parameters error.")
-        curtime = datetime.now()
-        play_list.end_time = curtime
-        play_list.cost_time = (curtime - play_list.start_time).second
-        db.session.add(play_list)
-        db.session.commit()
+    do_set_play_list(g.user.uid, [g.args["sid"]])
     do_get_song_list(g.user.uid, g.args["speed"])
 
 
@@ -110,16 +104,15 @@ def get_history_list():
     play_list = PlayList.query.filter(PlayList.start_time > start_time).filter(PlayList.end_time < str(end_time)).all()
     g.result["total_num"] = len(play_list)
     g.result["lists"] = []
-    i = 0
     for item in play_list:
         song = Song.query.get(item.sid)
         t = song.to_dict()
         t["time_cost"] = item.cost_time
-        if s.favor_users.query.filter(User.uid == uid).first() is None:
-            t["is_favorite"] = "0"
-        else:
+        f = s.favor_users.query.filter(User.uid == uid).first()
+        if f is not None and f.state == 2:
             t["is_favorite"] = "1"
-        i += 1
+        else:
+            t["is_favorite"] = "0"
         g.result["lists"].append(t)
 
 
@@ -132,7 +125,6 @@ def do_get_song_list(uid, speed):
     songs = normal_recommend(uid, float(g.args["speed"]), mode)
     g.result["total_num"] = len(songs)
     g.result["lists"] = []
-    i = 0
     for s in songs:
         t = s.to_dict()
         key = tool.get_key()
@@ -140,14 +132,34 @@ def do_get_song_list(uid, speed):
         url_id = tool.get_urlid(key, uid, s.sid, expires, 600)
         t["url"] = BaseConfig.HOST + "/pool/music/" + url_id 
         item = FavorList.query.filter(FavorList.sid == s.sid and FavorList.uid == uid).first()
-        if item is None:
-            t["is_favorite"] = "0"
-        else:
+        if item is not None and item.state == 2:
             t["is_favorite"] = "1"
+        else:
+            t["is_favorite"] = "0"
 
         g.result["lists"].append(t)
 
         urlmap = UrlMap(url_id, uid, s.sid, key, expires)
         db.session.add(urlmap)
-        i += 1
+
+        playlist = PlayList(uid, s.sid)
+        db.session.add(playlist)
+    db.session.commit()
+
+
+'''
+Set play list.
+'''
+def do_set_play_list(uid, sid_list):
+    for sid in sid_list:
+        play_list = PlayList.query.filter(PlayList.uid == uid and PlayList.sid == sid) \
+                                    .order_by(PlayList.start_time.desc()).first()
+        if play_list is None:
+            continue
+        if play_list.end_time is None:
+            continue
+        curtime = datetime.now()
+        play_list.end_time = curtime
+        play_list.cost_time = (curtime - play_list.start_time).second
+        db.session.add(play_list)
     db.session.commit()
