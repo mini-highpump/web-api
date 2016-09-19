@@ -126,7 +126,7 @@ def runTest():
     app.get_token()
     app.get_token(2)
     # choose_mode
-    app.choose_mode(2)
+    app.choose_mode(1)
     # get_play_list
     r = app.get_play_list(150)
     if len(r["lists"]) <= 0:
@@ -139,7 +139,7 @@ def runTest():
     pool.download(url)
 
     # switch_song
-    r = app.switch_song(180, sid)
+    r = app.switch_song(190, sid)
     if len(r["lists"]) <= 0:
         raise Exception("Playlist is empty.")
     sid_list = [item["sid"] for item in r["lists"]]
@@ -152,10 +152,13 @@ def runTest():
     print "[%d]%s" % (i, sid_list[i])
     print "[%d]%s" % (j, sid_list[j])
 
+    for sid in sid_list:
+        app.toggle_like(sid)
+
     # like
-    app.toggle_like(sid_list[i])
+    # app.toggle_like(sid_list[i])
     # unlike
-    app.toggle_like(sid_list[j])
+    # app.toggle_like(sid_list[j])
 
     # get_history_list
     app.get_history_list()
