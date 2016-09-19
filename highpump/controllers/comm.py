@@ -37,9 +37,9 @@ def normal_recommend(uid, speed, mode):
 def special_recommend(uid, mode):
     vA = gr.lrange("user_result_" + uid, 0, -1)
     if mode == 3:
-        vB = Song.query.filter(Song.length < 150 and Song.length > 50).all()
+        vB = Song.query.filter(Song.length < 150, Song.length > 50).all()
     else:
-        vB = Song.query.filter(Song.length < 250 and Song.length > 150).all()
+        vB = Song.query.filter(Song.length < 250, Song.length > 150).all()
     result = [item for item in vB if item.sid in vA]
     if len(result) > 3:
         i = int(random.random() * len(result))
