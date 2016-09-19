@@ -6,6 +6,7 @@ import base64
 import redis
 import json
 import time
+import random
 
 
 def get(url, data={}):
@@ -70,9 +71,11 @@ class ApplicationTest(object):
         assert(self.r.get("user_mode_" + self._uid) == str(mode))
 
 
-    def get_play_list(self, speed):
+    def get_play_list(self, speed, sid_list=[]):
         data = self.pack_param()
         data["speed"] = speed
+        if len(sid_list) > 0:
+            data["songs"] = "|".join(sid_list)
         r = post(self.url + "get_play_list", data)
         ASSERT_RET(r)
         print r
@@ -136,11 +139,23 @@ def runTest():
     pool.download(url)
 
     # switch_song
-    app.switch_song(180, sid)
+    r = app.switch_song(180, sid)
+    if len(r["lists"]) <= 0:
+        raise Exception("Playlist is empty.")
+    sid_list = [item["sid"] for item in r["lists"]]
+
+    r = app.get_play_list(160, sid_list)
+
+    i = int(random.random() * len(sid_list))
+    j = int(random.random() * len(sid_list))
+
+    print "[%d]%s" % (i, sid_list[i])
+    print "[%d]%s" % (j, sid_list[j])
+
     # like
-    app.toggle_like(sid)
+    app.toggle_like(sid_list[i])
     # unlike
-    app.toggle_like(sid)
+    app.toggle_like(sid_list[j])
 
     # get_history_list
     app.get_history_list()
