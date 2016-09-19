@@ -109,7 +109,7 @@ def get_history_list():
         song = Song.query.get(item.sid)
         t = song.to_dict()
         t["time_cost"] = item.cost_time
-        f = FavorList.query.filter(FavorList.uid == g.user.uid and FavorList.sid == song.sid).first()
+        f = FavorList.query.filter(FavorList.uid == g.user.uid, FavorList.sid == song.sid).first()
         if f is not None and f.state == 2:
             t["is_favorite"] = "1"
         else:
@@ -133,7 +133,7 @@ def do_get_song_list(uid, speed):
         expires = int(time.time()) + 600
         url_id = tool.get_urlid(key, uid, s.sid, expires, 600)
         t["url"] = BaseConfig.HOST + "/pool/music/" + url_id 
-        item = FavorList.query.filter(FavorList.sid == s.sid and FavorList.uid == uid).first()
+        item = FavorList.query.filter(FavorList.sid == s.sid, FavorList.uid == uid).first()
         if item is not None and item.state == 2:
             t["is_favorite"] = "1"
         else:
