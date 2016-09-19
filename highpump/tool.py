@@ -138,6 +138,7 @@ def filter(t):
         from flask import g, request
         @wraps(func)
         def wrapper(*args, **kwargs):
+            print request.form
             for i in t:
                 if not request.form.has_key(i):
                     raise ThrownError(-20001, "Parameters error.")
@@ -170,8 +171,9 @@ def required_login(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         uid, ts = base64.standard_b64decode(g.args["uinfo"]).split(":")
+	print ts, int(time.time())
         diff = int(time.time()) - int(ts)
-        if diff > 12000 or diff < 0:
+        if diff > 12000 or diff < -10:
             raise ThrownError(-20002, "Request timeout.")
         u = User.query.get(uid)
         if u is None:
