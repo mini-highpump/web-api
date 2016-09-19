@@ -80,10 +80,10 @@ def switch_song():
 @tool.pack_return
 def toggle_like():
     f = FavorList.query.filter(FavorList.uid == g.user.uid and FavorList.sid == g.args["sid"]).all()
-    if len(f) > 1:
-        raise InternalError(-10003, "Affected rows more than 1.")
-    elif len(f) == 0:
+    if f is None or len(f) == 0:
         f = FavorList(g.user.uid, g.args["sid"], 2)
+    elif len(f) > 1:
+        raise InternalError(-10003, "Affected rows more than 1.")
     else:
         f = f[0]
         if f.state == 1:

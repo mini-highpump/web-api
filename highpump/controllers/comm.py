@@ -29,7 +29,7 @@ def normal_recommend(uid, speed, mode):
             vB = Song.query.all()
         i = int(random.random() * len(vB))
         print i
-        print vB
+        # print vB
         result.append(vB[i])
     return result
 
