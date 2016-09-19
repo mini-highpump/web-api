@@ -2,3 +2,5 @@
 batch/*
 spider/*
 *.mp4
+*.log
+*.json
