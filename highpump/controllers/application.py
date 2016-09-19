@@ -80,6 +80,7 @@ def switch_song():
 @tool.pack_return
 def toggle_like():
     f = FavorList.query.filter(FavorList.uid == g.user.uid and FavorList.sid == g.args["sid"]).all()
+    print "len of F:%d" % len(f)
     if f is None or len(f) == 0:
         f = FavorList(g.user.uid, g.args["sid"], 2)
     elif len(f) > 1:
