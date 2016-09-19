@@ -44,19 +44,9 @@ def special_recommend(uid, mode):
         j = int(random.random() * len(result))
         k = int(random.random() * len(result))
         return [result[i], result[j], result[k]]
+    else:
+        if len(vB) == 0:
+            vB = Song.query.all()
+        i = int(random.random() * len(vB))
+        result.append(vB[i])
     return result
-
-
-def compute_by_mode(mode):
-    print "mode: %d" % mode
-    if mode == 1:
-        def wrapper(speed, bpm):
-            speed *= 10
-            return speed >= (bpm - 100) and speed < (bpm + 100)
-        return warpper
-    elif mode == 2:
-        def wrapper(speed, bpm):
-            speed *= 10
-            return speed >= bpm and speed < (bpm + 200)
-        return wrapper
-    return lambda x, y : True 

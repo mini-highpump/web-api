@@ -171,7 +171,7 @@ def required_login(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         uid, ts = base64.standard_b64decode(g.args["uinfo"]).split(":")
-	print ts, int(time.time())
+        print ts, int(time.time())
         diff = int(time.time()) - int(ts)
         if diff > 12000 or diff < -10:
             raise ThrownError(-20002, "Request timeout.")

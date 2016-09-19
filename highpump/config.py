@@ -8,6 +8,8 @@ class BaseConfig(object):
 
     HOST = "http://localhost:5000"
 
+    SQLALCHEMY_ECHO = True
+
 
 class DevelopmentConfig(BaseConfig):
     '''Development mode'''

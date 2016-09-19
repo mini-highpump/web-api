@@ -13,6 +13,7 @@ from ..models.user import User
 from ..models.favor import FavorList
 from ..models.urlmap import UrlMap
 from ..models.playlist import PlayList
+from ..models.song import Song
 from ..config import BaseConfig
 from comm import normal_recommend
 
@@ -108,7 +109,7 @@ def get_history_list():
         song = Song.query.get(item.sid)
         t = song.to_dict()
         t["time_cost"] = item.cost_time
-        f = s.favor_users.query.filter(User.uid == uid).first()
+        f = FavorList.query.filter(FavorList.uid == g.user.uid and FavorList.sid == song.sid).first()
         if f is not None and f.state == 2:
             t["is_favorite"] = "1"
         else:
@@ -126,6 +127,7 @@ def do_get_song_list(uid, speed):
     g.result["total_num"] = len(songs)
     g.result["lists"] = []
     for s in songs:
+        print s.sid
         t = s.to_dict()
         key = tool.get_key()
         expires = int(time.time()) + 600
@@ -141,10 +143,11 @@ def do_get_song_list(uid, speed):
 
         urlmap = UrlMap(url_id, uid, s.sid, key, expires)
         db.session.add(urlmap)
+        db.session.commit()
 
         playlist = PlayList(uid, s.sid)
         db.session.add(playlist)
-    db.session.commit()
+        db.session.commit()
 
 
 '''
@@ -160,6 +163,6 @@ def do_set_play_list(uid, sid_list):
             continue
         curtime = datetime.now()
         play_list.end_time = curtime
-        play_list.cost_time = (curtime - play_list.start_time).second
+        play_list.cost_time = (curtime - play_list.start_time).seconds
         db.session.add(play_list)
     db.session.commit()
