@@ -186,3 +186,23 @@ def required_login(func):
         g.token = g.args["token"]
         return func(*args, **kwargs)
     return wrapper
+
+
+def wrap_url(base_uri, **kwargs):
+    if kwargs == {}:
+        return base_uri
+    r = ["=".join([str(key), str(value)]) for key,value in kwargs.iteritems()]
+    return base_uri + "?" + "&".join(r)
+    
+
+def get(url, data = {}, type=1):
+    '''
+    @param type  1-json, 2-binary
+    '''
+    url = wrap_url(url, **data)
+    # print url
+    response = urllib2.urlopen(url)
+    if type == 1:
+        return json.loads(response.read())
+    else:
+        return response

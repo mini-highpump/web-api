@@ -36,9 +36,10 @@ def init_blueprint(app):
     '''
     Initialize blueprints
     '''
-    from controllers import application, pool
+    from controllers import application, pool, auth
     app.register_blueprint(application.bp, url_prefix='/app')
     app.register_blueprint(pool.bp, url_prefix='/pool')
+    app.register_blueprint(auth.bp, url_prefix='/auth')
 
 
 def init_errorhandlers(app):
