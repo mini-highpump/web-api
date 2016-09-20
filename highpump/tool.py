@@ -192,7 +192,9 @@ def required_login(func):
 def wrap_url(base_uri, **kwargs):
     if kwargs == {}:
         return base_uri
-    kwargs.sort()
+    print kwargs
+    sorted(kwargs.items(), key=lambda d: d[0])
+    print kwargs
     r = ["=".join([str(key), str(value)]) for key,value in kwargs.iteritems()]
     return base_uri + "?" + "&".join(r)
     
