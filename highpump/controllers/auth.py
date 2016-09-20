@@ -4,9 +4,11 @@
 Music pool
 Convert url_id to real sid and return the song
 '''
+import urllib2
+import json
 from flask import Blueprint, request, g
 from .. import tool, gr
-from ..error import ThrownError
+from ..error import ThrownError, InternalError
 
 URL_ACCESS_TOKEN = "https://api.weixin.com/sns/oauth2/access_token"
 URL_REFRESH_TOKEN = "https://api.weixin.com/sns/oauth2/refresh_token"
@@ -34,13 +36,15 @@ def get_step():
 
 
 def access_token(uid, code):
-    data = {
-            "appid": APPID, 
-            "secret": APP_SECRET, 
-            "code": code, 
-            "grant_type": "authorization_code"
-        }
-    r = tool.get(URL_ACCESS_TOKEN, data)
+    data = "?appid=" + APPID
+    data += "&secret=" + APP_SECRET
+    data += "&code=" + code
+    data += "&grant_type=" + "authorization_code"
+    print data
+    try:
+        r = json.loads(urllib2.urlopen(URL_ACCESS_TOKEN + data, timeout=5).read())
+    except:
+        raise InternalError(-10004, "Network connect failed.")
     print r
     if r.has_key("errcode"):
         if r["errcode"] == 42001: # access_token超时
