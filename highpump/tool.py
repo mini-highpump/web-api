@@ -13,6 +13,7 @@ import base64
 import struct
 import os
 import urllib
+import urllib2
 from Crypto.Cipher import AES
 from error import InternalError, ThrownError
 from counter import get_counter

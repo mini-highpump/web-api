@@ -4,7 +4,6 @@
 Music pool
 Convert url_id to real sid and return the song
 '''
-import urllib2
 from flask import Blueprint, request, g
 from .. import tool, gr
 from ..error import ThrownError
@@ -22,14 +21,14 @@ WX_TOKEN_KEY_PREFIX = "wx_token_"
 bp = Blueprint("auth", __name__)
 
 
-@bp.route("/auth/get_step", methods=["POST"])
+@bp.route("/get_step", methods=["POST"])
 @tool.begin
 @tool.filter(["uinfo", "token", "code"])
 @tool.required_login
 @tool.pack_return
 def get_step():
-    access_token, refresh_token = access_token(g.user.uid, g.args["code"])
-    r = getstep(g.user.uid, access_token)
+    acc_token, re_token = access_token(g.user.uid, g.args["code"])
+    r = getstep(g.user.uid, acc_token)
     g.result["step"] = r["step"]
     g.result["timestamp"] = r["timestamp"]
 
