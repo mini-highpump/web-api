@@ -32,6 +32,7 @@ def ASSERT_RET(r):
 class ApplicationTest(object):
     def __init__(self):
         self.url = "http://localhost:5000/app/"
+        self.authurl = "http://localhost:5000/auth/"
         self.r = redis.Redis("localhost")
 
 
@@ -61,6 +62,14 @@ class ApplicationTest(object):
         ASSERT_RET(r)
         self._uid = r["uid"]
         self._token = r["token"]
+
+
+    def get_auth(self, code):
+        data = self.pack_param()
+        data["code"] = code
+        r = post(self.authurl + "get_step", data)
+        print r
+        ASSERT_RET(r)
 
 
     def choose_mode(self, mode):
@@ -125,6 +134,7 @@ def runTest():
     # login
     app.get_token()
     app.get_token(2)
+    app.get_auth("12345566")
     # choose_mode
     app.choose_mode(1)
     # get_play_list
