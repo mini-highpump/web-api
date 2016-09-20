@@ -201,7 +201,7 @@ def get(url, data = {}, type=1):
     @param type  1-json, 2-binary
     '''
     url = wrap_url(url, **data)
-    # print url
+    print url
     response = urllib2.urlopen(url)
     if type == 1:
         return json.loads(response.read())
