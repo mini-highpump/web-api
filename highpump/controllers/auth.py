@@ -40,7 +40,7 @@ def access_token(uid, code):
     data += "&secret=" + APP_SECRET
     data += "&code=" + code
     data += "&grant_type=" + "authorization_code"
-    print data
+    print URL_ACCESS_TOKEN + data
     try:
         r = json.loads(urllib2.urlopen(URL_ACCESS_TOKEN + data, timeout=5).read())
     except:
