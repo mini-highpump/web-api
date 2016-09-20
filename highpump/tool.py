@@ -192,6 +192,7 @@ def required_login(func):
 def wrap_url(base_uri, **kwargs):
     if kwargs == {}:
         return base_uri
+    kwargs.sort()
     r = ["=".join([str(key), str(value)]) for key,value in kwargs.iteritems()]
     return base_uri + "?" + "&".join(r)
     
@@ -202,8 +203,11 @@ def get(url, data = {}, type=1):
     '''
     url = wrap_url(url, **data)
     print url
-    response = urllib2.urlopen(url)
-    if type == 1:
-        return json.loads(response.read())
-    else:
-        return response
+    try:
+        response = urllib2.urlopen(url, timeout=5)
+        if type == 1:
+            return json.loads(response.read())
+        else:
+            return response
+    except:
+        raise InternalError(-10004, "Network connect failed.")
