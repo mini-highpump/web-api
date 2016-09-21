@@ -8,7 +8,7 @@ class BaseConfig(object):
 
     HOST = "http://119.29.247.130"
 
-    SQLALCHEMY_ECHO = True
+    SQLALCHEMY_ECHO = False
 
 
 class DevelopmentConfig(BaseConfig):
