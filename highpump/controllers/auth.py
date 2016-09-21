@@ -10,9 +10,9 @@ from flask import Blueprint, request, g
 from .. import tool, gr
 from ..error import ThrownError, InternalError
 
-URL_ACCESS_TOKEN = "https://api.weixin.com/sns/oauth2/access_token"
-URL_REFRESH_TOKEN = "https://api.weixin.com/sns/oauth2/refresh_token"
-URL_GET_STEP = "https://api.weixin.com/hardware/snstransfer/bracelet/getstep"
+URL_ACCESS_TOKEN = "https://api.weixin.qq.com/sns/oauth2/access_token"
+URL_REFRESH_TOKEN = "https://api.weixin.qq.com/sns/oauth2/refresh_token"
+URL_GET_STEP = "https://api.weixin.qq.com/hardware/snstransfer/bracelet/getstep"
 
 APPID = "wxda065e7b6fcfa601"
 APP_SECRET = "3fd784596deca10931b6ca8add80c14b"
@@ -76,7 +76,7 @@ def refresh_token(uid, refresh_token):
     return (r["access_token"], r["refresh_token"])
 
 
-def get_step(uid, access_token):
+def getstep(uid, access_token):
     data = {
             "access_token": access_token
         }
