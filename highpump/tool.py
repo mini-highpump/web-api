@@ -161,6 +161,7 @@ def pack_return(func):
         func(*args, **kwargs)
         g.result["retcode"] = 0
         g.result["retmsg"] = "ok"
+        print g.result
         return json.dumps(g.result)
     return wrapper
 

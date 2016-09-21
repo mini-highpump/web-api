@@ -29,28 +29,24 @@ bp = Blueprint("auth", __name__)
 @tool.required_login
 @tool.pack_return
 def get_step():
-    acc_token, re_token = access_token(g.user.uid, g.args["code"])
+    if gr.hexists(WX_TOKEN_KEY_PREFIX + g.user.uid, "access_token"):
+        acc_token = gr.hmget(WX_TOKEN_KEY_PREFIX + g.user.uid, "access_token")
+    else:
+        acc_token, re_token = access_token(g.user.uid, g.args["code"])
     r = getstep(g.user.uid, acc_token)
     g.result["step"] = r["step"]
     g.result["timestamp"] = r["timestamp"]
 
 
 def access_token(uid, code):
-    data = "?appid=" + APPID
-    data += "&secret=" + APP_SECRET
-    data += "&code=" + code
-    data += "&grant_type=" + "authorization_code"
-    print URL_ACCESS_TOKEN + data
-    try:
-        r = json.loads(urllib2.urlopen(URL_ACCESS_TOKEN + data, timeout=5).read())
-    except:
-        raise InternalError(-10004, "Network connect failed.")
+    data = {
+            "appid": APPID, 
+            "secret": APP_SECRET, 
+            "code": code,
+            "grant_type": "authorization_code"
+        }
+    r = tool.get(URL_ACCESS_TOKEN, data)
     print r
-    if r.has_key("errcode"):
-        if r["errcode"] == 42001: # access_token超时
-            refresh_token = gr.hget(WX_TOKEN_KEY_PREFIX + uid, "refresh_token")
-            return refresh_token(uid, refresh_token)
-        raise ThrownError(r["errcode"], r["errmsg"])
     # 写入redis缓存
     d = {
             "access_token": r["access_token"], 
@@ -85,6 +81,11 @@ def get_step(uid, access_token):
             "access_token": access_token
         }
     r = tool.get(URL_GET_STEP, data)
+    if r.has_key("errcode"):
+        if r["errcode"] == 42001: # access_token超时
+            refresh_token = gr.hget(WX_TOKEN_KEY_PREFIX + uid, "refresh_token")
+            return refresh_token(uid, refresh_token)
+        raise ThrownError(r["errcode"], r["errmsg"])
     print r
     if r["errcode"] != 0:
         raise ThrownError(r["errcode"], r["errmsg"])
