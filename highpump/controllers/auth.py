@@ -81,12 +81,16 @@ def getstep(uid, access_token):
             "access_token": access_token
         }
     r = tool.get(URL_GET_STEP, data)
-    if r.has_key("errcode"):
+    print r
+    if r.has_key("errcode") and r["errcode"] != 0:
         if r["errcode"] == 42001: # access_token超时
             refresh_token = gr.hget(WX_TOKEN_KEY_PREFIX + uid, "refresh_token")
-            return refresh_token(uid, refresh_token)
-        raise ThrownError(r["errcode"], r["errmsg"])
-    print r
-    if r["errcode"] != 0:
-        raise ThrownError(r["errcode"], r["errmsg"])
+            acc_token, re_token = refresh_token(uid, refresh_token)
+            r = tool.get(URL_GET_STEP, data)
+            print r
+            # 重试一次
+            if r["errcode"] != 0:
+                raise ThrownError(r["errcode"], r["msg"])
+        else:
+            raise ThrownError(r["errcode"], r["msg"])
     return r
