@@ -30,9 +30,10 @@ bp = Blueprint("auth", __name__)
 @tool.pack_return
 def get_step():
     if gr.hexists(WX_TOKEN_KEY_PREFIX + g.user.uid, "access_token"):
-        acc_token = gr.hmget(WX_TOKEN_KEY_PREFIX + g.user.uid, "access_token")
+        acc_token = gr.hget(WX_TOKEN_KEY_PREFIX + g.user.uid, "access_token")
     else:
         acc_token, re_token = access_token(g.user.uid, g.args["code"])
+    print "Access Token:%s" % acc_token
     r = getstep(g.user.uid, acc_token)
     g.result["step"] = r["step"]
     g.result["timestamp"] = r["timestamp"]
@@ -47,6 +48,10 @@ def access_token(uid, code):
         }
     r = tool.get(URL_ACCESS_TOKEN, data)
     print r
+    if r.has_key("errcode"):
+        if r["errcode"] == 42001:
+            raise ThrownError(-20006, "access_token超时, 需要重新授权")
+        raise ThrownError(r["errcode"], r["errmsg"])
     # 写入redis缓存
     d = {
             "access_token": r["access_token"], 
@@ -90,7 +95,15 @@ def getstep(uid, access_token):
             print r
             # 重试一次
             if r["errcode"] != 0:
-                raise ThrownError(r["errcode"], r["msg"])
+		if r.has_key("msg"):
+		    msg = r["msg"]
+                else:
+		    msg = r["errmsg"]
+                raise ThrownError(r["errcode"], msg)
         else:
-            raise ThrownError(r["errcode"], r["msg"])
+	    if r.has_key("msg"):
+	        msg = r["msg"]
+	    else:
+	        msg = r["errmsg"]
+            raise ThrownError(r["errcode"], msg)
     return r

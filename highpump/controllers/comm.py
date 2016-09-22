@@ -8,7 +8,7 @@ from ..error import InternalError
 
 
 def normal_recommend(uid, speed, mode):
-    speed *= 10
+    speed = int(speed) * 10
     print "speed:%s" % speed
     vA = gr.lrange("user_result_" + uid, 0, -1)
     if mode == 1:

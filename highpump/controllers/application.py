@@ -103,7 +103,7 @@ def toggle_like():
 def get_history_list():
     end_time = datetime.now()
     start_time = gr.get("user_start_time_" + g.user.uid)
-    play_list = PlayList.query.filter(PlayList.start_time > start_time).filter(PlayList.end_time < str(end_time)).all()
+    play_list = PlayList.query.filter(PlayList.start_time > start_time, PlayList.end_time < str(end_time), PlayList.cost_time != 0).all()
     g.result["total_num"] = len(play_list)
     g.result["lists"] = []
     for item in play_list:
